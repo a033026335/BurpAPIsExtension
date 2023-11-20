@@ -4,26 +4,34 @@
 #by helping pen tester naming tab with approperiate endpoints, and to prevent sending individual call to the Repeater tab.
 
 from burp import IBurpExtender, ITab
-from javax.swing import JFrame, JButton, JTextArea, JFileChooser, JPanel, JScrollPane, JLabel, BoxLayout
+from javax.swing import JTabbedPane, JFrame, JButton, JTextArea, JFileChooser, JPanel, JScrollPane, JLabel, BoxLayout
 from java.awt import Font, BorderLayout
 from java.net import URL
+from javax.swing import JCheckBox
+
 class BurpExtender(IBurpExtender, ITab):
 
     def registerExtenderCallbacks(self, callbacks):
+
         # Set up the extension
         self._callbacks = callbacks
         self._helpers = callbacks.getHelpers()
         callbacks.setExtensionName("HTTP Requests Importer")
         callbacks.issueAlert("HTTP Request Importer Loaded")
+
         # Create GUI
         self.frame = JFrame("Import HTTP Requests")
         self.panel = JPanel()
         self.panel.setLayout(BoxLayout(self.panel, BoxLayout.Y_AXIS))
+
         # Welcome label at the top
         welcomeLabel = JLabel("Welcome to HTTP Requests Importer")
         welcomeLabel.setFont(Font("SansSerif", Font.BOLD, 30))
         self.panel.add(welcomeLabel, BorderLayout.NORTH)
 
+        # Checkbox for external APIs
+        self.externalApiCheckbox = JCheckBox("External APIs")
+        self.panel.add(self.externalApiCheckbox, BorderLayout.NORTH)
         instructionmessage = JLabel("Please follow the following instruction to import http requests and sent to Repeater Tab.")
         self.panel.add(instructionmessage, BorderLayout.WEST)
         instructionmessage1 = JLabel("First: You would want to process and formate your list of endpoint names for all of your HTTP requests.")
@@ -40,15 +48,18 @@ class BurpExtender(IBurpExtender, ITab):
         buttonPanel.add(self.toRepeaterButton)
         buttonPanel.add(self.clearButton)
         self.panel.add(buttonPanel, BorderLayout.NORTH)
+
         # Text area for displaying imported requests
         self.textArea = JTextArea(10, 50)
         self.scrollPane = JScrollPane(self.textArea)
         self.panel.add(self.scrollPane, BorderLayout.CENTER)
+
         # Second text area for displaying formatted endpoints
         self.endpointsTextArea = JTextArea(10, 50)
         self.endpointsScrollPane = JScrollPane(self.endpointsTextArea)
         self.panel.add(self.endpointsScrollPane, BorderLayout.CENTER)
         self.frame.getContentPane().add(self.panel)
+        
         # Add the custom tab to Burp's UI
         callbacks.addSuiteTab(self)
 
@@ -81,15 +92,27 @@ class BurpExtender(IBurpExtender, ITab):
                 self.textArea.text = "".join(file_contents)
 
     def formatEndpoints(self, event):
+        # Check if External APIs checkbox is checked
+        isExternal = self.externalApiCheckbox.isSelected()
         # Process and format pasted endpoint names
         rawEndpoints = self.textArea.text.split("\n")
-        formattedEndpoints = [endpoint.strip() for endpoint in rawEndpoints if endpoint.strip()]
+        formattedEndpoints = []
+        for endpoint in rawEndpoints:
+            endpoint = endpoint.strip()
+            if endpoint:
+                if isExternal:
+                    formattedEndpoint = "internal-" + endpoint + ", external-" + endpoint
+                else:
+                    formattedEndpoint = "internal-" + endpoint
+                formattedEndpoints.append(formattedEndpoint)
         formattedEndpointsString = "#Endpoints:[" + ", ".join(formattedEndpoints) + "]"
         self.endpointsTextArea.setText(formattedEndpointsString)
 
     def sendToRepeater(self, e):
         # Process requests
         lines = self.textArea.text.split("\n")
+        # Filter out the #Endpoints line
+        lines = [line for line in lines if not line.startswith("#Endpoints")]
         requests = []
         self.endpointNames = self.processEndpoints(self.endpointsTextArea.text)
         currentRequest = []
@@ -110,6 +133,7 @@ class BurpExtender(IBurpExtender, ITab):
                 endpointIndex += 1
             except Exception as ex:
                 print("Error processing request: ", ex)
+
     def processEndpoints(self, endpointsText):
         if endpointsText.startswith("#Endpoints:"):
             return endpointsText.strip().split(":")[1].strip("[]").split(", ")
