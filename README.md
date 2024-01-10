@@ -2,6 +2,8 @@
 
 <img width="1020" alt="image" src="https://github.com/a033026335/BurpAPIsExtension/assets/35503874/4af7d2b9-9fe4-459b-82ef-ba1f568cfb52">
 
+Do you not like to keep going back and forth with intercepting API requests, manually sending APIs into repeater tabs, and renaming each repeater tab to corresponding endpoints before you even start performing the pen testing? Especially when you have over 20 endpoints... Then this Burp Suite extension is for you! 
+
 Burp Extension to parse HTTP requests for APIs to Repeater tabs with formatted tab names.
 
 Download
