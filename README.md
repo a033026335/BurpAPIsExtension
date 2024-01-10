@@ -18,3 +18,6 @@ Select the file that contains all HTTP requests that are in the corresponding or
 
 3: you can just click the send to repeater tab button. Then all HTTP requests should have the corresponding endpoint name in the order in which it was imported.")
 
+Note:
+
+There is an additional Python script that you can download where users can upload Postman or Insomnia collections and format HTTP requests and scoped endpoints as output. Please see the following GitHub page for Parse_scope.
