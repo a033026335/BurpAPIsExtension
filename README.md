@@ -22,4 +22,4 @@ Select the file that contains all HTTP requests that are in the corresponding or
 
 Note:
 
-There is an additional Python script that you can download where users can upload Postman or Insomnia collections and format HTTP requests and scoped endpoints as output. Please see the following GitHub page for Parse_scope.
+There is an additional Python script that you can download where users can upload Postman or Insomnia collections and format HTTP requests and scoped endpoints as output. Please see the following GitHub page for Parse_scope. https://github.com/a033026335/Parse_scope
