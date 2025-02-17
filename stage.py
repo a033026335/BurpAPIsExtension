@@ -1,6 +1,3 @@
-To integrate the functionality of converting JSON to HTTP requests from the `parse_test_scope` script into the `BurpAPIs2Repeater` script, we need to add new buttons and corresponding methods to handle the JSON file upload, conversion, and display of the resulting HTTP requests in the text area. Below is the modified version of the `BurpAPIs2Repeater` script with the added functionality:
-
-```python
 from burp import IBurpExtender, ITab
 from javax import swing
 from javax.swing import JTabbedPane, ImageIcon, JFrame, JButton, JTextArea, JFileChooser, JPanel, JScrollPane, JLabel, BoxLayout, SwingConstants
@@ -316,15 +313,3 @@ class BurpExtender(IBurpExtender, ITab):
                             body_line = 'Invalid form data.\n\n'
                     http_requests.append(first_line + headers_line + body_line)
         return http_requests
-```
-
-### Key Changes:
-1. **Added `uploadJsonButton`**: A new button to upload JSON files and convert them to HTTP requests.
-2. **Added `uploadJson` Method**: This method handles the file upload and calls the `convert_to_http_requests` method to convert the JSON data to HTTP requests.
-3. **Added `convert_to_http_requests` Method**: This method is adapted from the `parse_test_scope` script to convert Postman and Insomnia collections to HTTP requests.
-
-### Usage:
-- **Upload JSON and Convert to HTTP**: Click the "Upload JSON and Convert to HTTP" button to upload a JSON file (Postman or Insomnia collection). The script will convert the collection to HTTP requests and display them in the top text area.
-- **Send to Repeater**: After converting, you can use the "Send to Repeater Tab" button to send the requests to Burp Suite's Repeater tab.
-
-This integration allows pen testers to easily import JSON collections, convert them to HTTP requests, and send them to Burp Suite's Repeater tab for further testing.
