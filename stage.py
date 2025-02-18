@@ -1,3 +1,4 @@
+
 from burp import IBurpExtender, ITab
 from javax import swing
 from javax.swing import JTabbedPane, ImageIcon, JFrame, JButton, JTextArea, JFileChooser, JPanel, JScrollPane, JLabel, BoxLayout, SwingConstants
@@ -5,7 +6,8 @@ from java.awt import Font, BorderLayout
 from java.net import URL
 from javax.swing import JCheckBox
 import json
-from urllib.parse import urlparse, quote, urlencode, parse_qs
+from urllib import quote, urlencode
+from urlparse import urlparse, parse_qs
 
 class BurpExtender(IBurpExtender, ITab):
 
@@ -231,9 +233,9 @@ class BurpExtender(IBurpExtender, ITab):
                     # Constructing the first line with method and path
                     path = url_details['path']
                     path_str = '/' + '/'.join(path) if path else ''
-                    query = '&'.join([f'{q["key"]}={q["value"]}' for q in url_details.get('query', [])])
-                    path_with_query = f'{path_str}?{query}' if query else path_str
-                    first_line = f'{method} {path_with_query} HTTP/1.1\n'
+                    query = '&'.join(['{}={}'.format(q["key"], q["value"]) for q in url_details.get('query', [])])
+                    path_with_query = '{}?{}'.format(path_str, query) if query else path_str
+                    first_line = '{} {} HTTP/1.1\n'.format(method, path_with_query)
                     # Constructing the headers, including Host and potentially authorization.
                     host = url_details['host']
                     host_str = '.'.join(host) if host else ''
@@ -248,14 +250,14 @@ class BurpExtender(IBurpExtender, ITab):
                     if auth:
                         if auth['type'] == 'basic':
                             import base64
-                            user_pass = f"{auth['basic'][0]['value']}:{auth['basic'][1]['value']}"
+                            user_pass = "{}:{}".format(auth['basic'][0]['value'], auth['basic'][1]['value'])
                             encoded_credentials = base64.b64encode(user_pass.encode()).decode()
-                            headers.append({'key': 'Authorization', 'value': f'Basic {encoded_credentials}'})
+                            headers.append({'key': 'Authorization', 'value': 'Basic {}'.format(encoded_credentials)})
                         elif auth['type'] == 'bearer':
                             token = auth['bearer'][0]['value']
-                            headers.append({'key': 'Authorization', 'value': f'Bearer {token}'})
+                            headers.append({'key': 'Authorization', 'value': 'Bearer {}'.format(token)})
                         # Add other auth types here as needed
-                    headers_line = '\n'.join([f'{header["key"]}: {header["value"]}' for header in headers]) + '\n\n'
+                    headers_line = '\n'.join(['{}: {}'.format(header["key"], header["value"]) for header in headers]) + '\n\n'
                     # Constructing the body from the 'raw' parameter
                     body = item['request'].get('body', {})
                     body_line = body.get('raw', '') + '\n\n' if body.get('mode') == 'raw' else ''
@@ -275,8 +277,8 @@ class BurpExtender(IBurpExtender, ITab):
                     full_query = urlencode(all_params, doseq=True)
                     path_with_query = parsed_url.path
                     if full_query:
-                        path_with_query += f'?{full_query}'
-                    first_line = f'{method} {path_with_query} HTTP/1.1\n'
+                        path_with_query += '?{}'.format(full_query)
+                    first_line = '{} {} HTTP/1.1\n'.format(method, path_with_query)
                     headers = item.get('headers', [])
                     headers.append({'name': 'Host', 'value': parsed_url.netloc})
                     # Adding scanning for Content-Type header as part of header to make sure it has required Content-Type parameter.
@@ -287,13 +289,13 @@ class BurpExtender(IBurpExtender, ITab):
                     auth_type = auth.get('type')
                     if auth_type == 'basic':
                         import base64
-                        user_pass = f"{auth.get('username')}:{auth.get('password')}"
+                        user_pass = "{}:{}".format(auth.get('username'), auth.get('password'))
                         encoded_credentials = base64.b64encode(user_pass.encode()).decode()
-                        headers.append({'name': 'Authorization', 'value': f'Basic {encoded_credentials}'})
+                        headers.append({'name': 'Authorization', 'value': 'Basic {}'.format(encoded_credentials)})
                     elif auth_type == 'bearer':
                         token = auth.get('token')
-                        headers.append({'name': 'Authorization', 'value': f'Bearer {token}'})
-                    headers_line = '\n'.join(f'{header["name"]}: {header["value"]}' for header in headers) + '\n\n'
+                        headers.append({'name': 'Authorization', 'value': 'Bearer {}'.format(token)})
+                    headers_line = '\n'.join(['{}: {}'.format(header["name"], header["value"]) for header in headers]) + '\n\n'
                     body = item.get('body', {})
                     body_type = body.get('mimeType')
                     body_content = body.get('text', '')
